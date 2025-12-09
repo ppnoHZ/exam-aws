@@ -1,0 +1,2222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI/ML & AWS 考题复习工具（英中对照）</title>
+    <!-- 引入Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            line-height: 1.6;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* 左侧菜单样式 */
+        .sidebar {
+            width: 240px;
+            background-color: #2d3748;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px 0;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .menu-section {
+            margin-bottom: 25px;
+        }
+
+        .menu-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #718096;
+            padding: 0 20px 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-item {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .menu-item:hover {
+            background-color: #4a5568;
+        }
+
+        .menu-item.active {
+            background-color: #4299e1;
+            color: white;
+        }
+
+        .menu-item i {
+            width: 18px;
+            text-align: center;
+        }
+
+        /* 主内容区域 */
+        .main-container {
+            flex: 1;
+            margin-left: 240px;
+            padding: 20px;
+            position: relative;
+            margin-top: 50px;
+            /* 为状态栏预留空间 */
+        }
+
+        .content-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding-bottom: 80px;
+            /* 为底部停止按钮预留空间 */
+        }
+
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        /* 弹窗遮罩层 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 弹窗显示状态 */
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        /* 系统设置弹窗 */
+        .settings-modal {
+            width: 90%;
+            max-width: 500px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* 弹窗关闭按钮 */
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #718096;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            flex: none;
+        }
+
+        .modal-close:hover {
+            color: #2d3748;
+            background-color: #f7fafc;
+            border-radius: 50%;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .settings-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 题库导入区域样式 */
+        .import-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .import-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .import-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .import-option {
+            width: 100%;
+        }
+
+        .import-label {
+            display: block;
+            font-size: 13px;
+            color: #4a5568;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .import-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .import-input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+        }
+
+        .import-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .import-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-api {
+            background-color: #4299e1;
+            color: white;
+        }
+
+        .btn-api:hover {
+            background-color: #3182ce;
+        }
+
+        .btn-file {
+            background-color: #38b2ac;
+            color: white;
+        }
+
+        .btn-file:hover {
+            background-color: #319795;
+        }
+
+        .import-status {
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .status-success {
+            background-color: #c6f6d5;
+            color: #22543d;
+            display: block;
+        }
+
+        .status-error {
+            background-color: #fed7d7;
+            color: #742a2a;
+            display: block;
+        }
+
+        /* 隐藏文件输入框 */
+        #fileInput {
+            display: none;
+        }
+
+        /* 随机题数设置 */
+        .random-settings {
+            padding: 10px;
+            background-color: #f0f8fb;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .random-settings.show {
+            display: block;
+        }
+
+        .random-settings label {
+            font-size: 13px;
+            color: #2d3748;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .random-settings input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* 控制按钮区 - 初始状态样式 */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        /* 无复习状态下的按钮容器 */
+        .initial-state .action-buttons {
+            justify-content: center;
+            margin-bottom: 0;
+            flex: 1;
+            align-items: center;
+        }
+
+        /* 复习状态下隐藏开始/重置按钮 */
+        .content-wrapper:not(.initial-state) .action-buttons {
+            display: none;
+        }
+
+        /* 通用按钮样式 */
+        button {
+            padding: 10px 15px;
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s, all 0.3s ease;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        /* 初始状态下的圆形开始按钮 */
+        .initial-state #startBtn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+            flex: none;
+        }
+
+        /* 初始状态下隐藏重置按钮 */
+        .initial-state #resetBtn {
+            display: none;
+        }
+
+        button:hover {
+            background-color: #3182ce;
+        }
+
+        button.reset {
+            background-color: #e53e3e;
+        }
+
+        button.reset:hover {
+            background-color: #c53030;
+        }
+
+        button.next {
+            background-color: #48bb78;
+        }
+
+        button.next:hover {
+            background-color: #38a169;
+        }
+
+        button.show-cn {
+            background-color: #9f7aea;
+        }
+
+        button.show-cn:hover {
+            background-color: #805ad5;
+        }
+
+        button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        /* 滑动切换按钮（固定在屏幕中间，默认隐藏） */
+        .swipe-nav {
+            position: fixed;
+            top: 50%;
+            left: 240px;
+            right: 0;
+            width: calc(100% - 240px);
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+            pointer-events: none;
+            padding: 0 30px;
+            z-index: 998;
+            display: none;
+        }
+
+        /* 有题目时显示切换按钮 */
+        .swipe-nav.show {
+            display: flex;
+        }
+
+        .swipe-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: rgba(66, 153, 225, 0.95);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+            pointer-events: auto;
+            flex: none;
+            padding: 0;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .swipe-btn:hover {
+            background-color: rgba(49, 130, 206, 0.95);
+        }
+
+        .swipe-btn:disabled {
+            background-color: rgba(160, 174, 192, 0.7);
+            cursor: not-allowed;
+        }
+
+        /* 题目卡片样式 */
+        .question-card {
+            display: flex;
+            flex-flow: column;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            touch-action: pan-y;
+            user-select: none;
+            position: relative;
+        }
+
+        /* 题目序号样式 */
+        .question-number {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .original-number {
+            font-weight: 600;
+            color: #4299e1;
+        }
+
+        .current-number {
+            font-style: italic;
+        }
+
+        /* 答题记录样式 - 重点优化 */
+        .answer-record {
+            margin-left: auto;
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            margin-bottom: 10px;
+            display: inline-block;
+            border: 1px solid #e8e8e8;
+        }
+
+        .correct-count {
+            color: #48bb78;
+            font-weight: 600;
+        }
+
+        .incorrect-count {
+            color: #e53e3e;
+            font-weight: 600;
+        }
+
+        /* 题干上方的进度提示样式 */
+        .question-progress {
+            color: #4299e1;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            padding: 5px 10px;
+            background-color: #f0f8fb;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .lang-group {
+            margin-bottom: 15px;
+        }
+
+        .lang-group.cn-hidden {
+            display: none;
+        }
+        
+        /* 进度和记录的容器样式 - 一行两端对齐 */
+        .progress-record-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f7fafc;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 15px;
+        }
+        
+        /* 进度项样式 */
+        .progress-item {
+            font-weight: 500;
+            color: #4a5568;
+        }
+        
+        /* 记录项样式 */
+        .record-item {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        /* 移除lang-label样式 */
+        .lang-label {
+            display: none;
+        }
+
+        .question-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d3748;
+            line-height: 1.7;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        /* 题干后的显示中文按钮样式 */
+        .toggle-cn-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            height: fit-content;
+            margin-top: 2px;
+            flex: none;
+            white-space: nowrap;
+        }
+
+        /* 选项样式 */
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .option-item {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .option-item:hover {
+            background-color: #f7fafc;
+        }
+
+        .option-item.correct {
+            background-color: #c6f6d5;
+            border-color: #48bb78;
+        }
+
+        .option-item.incorrect {
+            background-color: #fed7d7;
+            border-color: #e53e3e;
+        }
+
+        .option-key {
+            font-weight: 600;
+            margin-right: 8px;
+            min-width: 18px;
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .option-text .en {
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .option-text .cn {
+            margin-top: 3px;
+            color: #4a5568;
+            font-size: 13px;
+        }
+
+        /* 答案区域 */
+        .answer-section {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .answer-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-size: 15px;
+        }
+
+        .answer-content {
+            font-size: 14px;
+        }
+
+        .answer-content .en {
+            color: #2d3748;
+            margin-bottom: 3px;
+        }
+
+        .answer-content .cn {
+            color: #4a5568;
+            font-size: 13px;
+        }
+
+        /* 空状态 */
+        .no-question {
+            text-align: center;
+            color: #718096;
+            padding: 40px 0;
+            font-size: 15px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 原控制栏的进度提示隐藏 */
+        .progress-tip {
+            display: none;
+        }
+
+        /* 停止复习按钮样式 - 重点优化 */
+        .stop-review-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            /* 半透明红色，视觉效果更好 */
+            background-color: rgba(229, 62, 62, 0.85);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            /* 优化阴影效果 */
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.4);
+            transition: all 0.2s ease-in-out;
+            z-index: 999;
+            display: none;
+            /* 添加hover动效 */
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+
+        .stop-review-btn.show {
+            display: flex;
+        }
+
+        .stop-review-btn:hover {
+            /* 加深透明度，放大一点 */
+            background-color: rgba(197, 48, 48, 0.95);
+            transform: translateX(-50%) scale(1.08);
+            box-shadow: 0 6px 20px rgba(229, 62, 62, 0.5);
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #2d3748;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 开关样式 - 显示答案模式开关 */
+        .toggle-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #e2e8f0;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 44px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            position: relative;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .toggle-switch input[type="checkbox"]::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.18s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-switch input[type="checkbox"]:checked {
+            background: #48bb78;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked::after {
+            transform: translateX(20px);
+        }
+
+        /* 响应式适配（手机端优先） */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 200px;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-container {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .content-wrapper {
+                padding: 15px;
+                min-height: calc(100vh - 30px);
+                padding-bottom: 80px;
+            }
+
+            .swipe-nav {
+                left: 0;
+                width: 100%;
+                padding: 0 15px;
+            }
+
+            /* 移动端菜单按钮 */
+            .menu-toggle {
+                /* position: fixed; */
+                top: 15px;
+                left: 15px;
+                width: 30px;
+                height: 30px;
+                /* border-radius: 50%; */
+                background-color: #4299e1;
+                color: white;
+                border: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                z-index: 1001;
+            }
+
+            /* 移动端弹窗适配 */
+            .settings-modal {
+                width: 95%;
+                max-width: 400px;
+            }
+
+            /* 移动端圆形开始按钮 */
+            .initial-state #startBtn {
+                width: 100px;
+                height: 100px;
+                font-size: 14px;
+            }
+
+            /* 移动端停止按钮调整 */
+            .stop-review-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 20px;
+                bottom: 15px;
+            }
+        }
+
+        @media (min-width: 993px) {
+            .menu-toggle {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .question-card {
+                padding: 15px;
+                min-height: 60vh;
+            }
+
+            /* 非初始状态下按钮垂直排列 */
+            .content-wrapper:not(.initial-state) .action-buttons {
+                flex-direction: column;
+            }
+
+            button {
+                padding: 10px 0;
+                font-size: 13px;
+            }
+
+            /* 手机端滑动按钮优化 */
+            .swipe-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+            }
+
+            /* 移动端题干按钮调整 */
+            .question-title {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .toggle-cn-btn {
+                align-self: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 状态栏 -->
+    <div class="status-bar" id="statusBar">
+        <div class="status-item">
+            <!-- 移动端菜单切换按钮 -->
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- <span>当前题目：</span> -->
+            <span id="currentQuestionInfo" style="display:none">未开始</span>
+        </div>
+        <div class="status-item" style="display: none;">
+            <span id="correctCount" style="color:green">0</span>
+            <span> | </span>
+            <span id="incorrectCount" style="color:red">0</span>
+        </div>
+        <div class="status-item">
+            <div class="toggle-switch" title="显示答案模式">
+                <label for="showAnswerToggle" style="font-size:13px;color:#e2e8f0;">显示答案</label>
+                <input type="checkbox" id="showAnswerToggle" aria-label="显示答案模式开关">
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 左侧菜单 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">系统设置</div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">复习模式</div>
+            <div class="menu-item active" data-mode="sequence">
+                <i class="fas fa-list-ol"></i>
+                <span>顺序模式</span>
+            </div>
+            <div class="menu-item" data-mode="random">
+                <i class="fas fa-random"></i>
+                <span>随机模式</span>
+            </div>
+
+            <div class="menu-item" data-mode="wrong">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>复习错题</span>
+            </div>
+        </div>
+
+        <!-- 新增：系统设置菜单选项 -->
+        <div class="menu-section">
+            <div class="menu-title">系统功能</div>
+            <div class="menu-item" id="settingsMenuItem">
+                <i class="fas fa-cog"></i>
+                <span>题库设置</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-container">
+        <div class="content-wrapper" id="contentWrapper">
+
+            <!-- 控制按钮区 -->
+            <div class="action-buttons">
+                <button id="startBtn"><i class="fas fa-play"></i> 开始复习</button>
+                <button id="resetBtn" class="reset"><i class="fas fa-refresh"></i> 重置复习</button>
+            </div>
+
+            <!-- 左右滑动切换按钮 -->
+            <div id="swipeNav" class="swipe-nav">
+                <button id="prevBtn" class="swipe-btn prev" disabled><i class="fas fa-chevron-left"></i></button>
+                <button id="nextSwipeBtn" class="swipe-btn next" disabled><i class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <div id="questionContainer">
+                <div class="no-question">
+                    选择复习模式后点击「开始复习」开始
+                </div>
+            </div>
+
+            <!-- 停止复习按钮 - 重点优化 -->
+            <button class="stop-review-btn" id="stopReviewBtn" title="停止复习">
+                <i class="fas fa-stop"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 系统设置弹窗（替代原来的右侧面板） -->
+    <div class="modal-overlay" id="settingsModalOverlay">
+        <div class="settings-modal">
+            <button class="modal-close" id="modalCloseBtn">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="settings-header">
+                <div class="settings-title">
+                    <i class="fas fa-cog"></i> 系统设置
+                </div>
+            </div>
+
+            <!-- 题库导入区域 -->
+            <div class="import-section">
+                <div class="import-title">
+                    <i class="fas fa-database"></i> 题库导入
+                </div>
+                <div class="import-options">
+                    <div class="import-option">
+                        <label class="import-label" for="apiUrl">接口地址导入</label>
+                        <input type="text" id="apiUrl" class="import-input" placeholder="输入返回题库JSON的接口地址">
+                    </div>
+                    <div class="import-option">
+                        <label class="import-label" for="fileInput">JSON文件导入</label>
+                        <input type="text" class="import-input" placeholder="点击下方按钮选择本地JSON文件" readonly>
+                        <input type="file" id="fileInput" accept=".json">
+                    </div>
+                </div>
+                <div class="import-buttons">
+                    <button class="import-btn btn-api" id="importFromApiBtn">
+                        <i class="fas fa-cloud-download-alt"></i> 从接口导入
+                    </button>
+                    <button class="import-btn btn-file" id="importFromFileBtn">
+                        <i class="fas fa-file-import"></i> 选择JSON文件
+                    </button>
+                </div>
+                <div id="importStatus" class="import-status"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始考题数据
+        let questionsData = [
+            {
+                "question_id": 1,
+                "question_en": "A company makes forecasts each quarter to decide how to optimize operations to meet expected demand. The company uses ML models to make these forecasts. An AI practitioner is writing a report about the trained ML models to provide transparency and explainability to company stakeholders. What should the AI practitioner include in the report to meet the transparency and explainability requirements?",
+                "question_cn": "某公司每季度都会进行预测，以决定如何优化运营来满足预期需求，该公司使用机器学习（ML）模型进行这些预测。一名AI从业者正在撰写一份关于已训练ML模型的报告，以便向公司利益相关者提供模型的透明度和可解释性。为满足透明度和可解释性要求，该AI从业者应在报告中包含什么内容？",
+                "options_en": {
+                    "A": "Code for model training",
+                    "B": "Partial dependence plots (PDPs)",
+                    "C": "Sample data for training",
+                    "D": "Model convergence tables"
+                },
+                "options_cn": {
+                    "A": "模型训练代码",
+                    "B": "部分依赖图（PDPs）",
+                    "C": "训练样本数据",
+                    "D": "模型收敛表"
+                },
+                "answer": "B"
+            },
+            {
+                "question_id": 2,
+                "question_en": "A law firm wants to build an AI application by using large language models (LLMs). The application will read legal documents and extract key points from the documents. Which solution meets these requirements?",
+                "question_cn": "某律师事务所希望使用大语言模型（LLMs）构建一个AI应用，该应用需能够读取法律文档并从中提取关键点。哪种解决方案能满足这些需求？",
+                "options_en": {
+                    "A": "Build an automatic named entity recognition system.",
+                    "B": "Create a recommendation engine.",
+                    "C": "Develop a summarization chatbot.",
+                    "D": "Develop a multi-language translation system."
+                },
+                "options_cn": {
+                    "A": "构建自动命名实体识别系统",
+                    "B": "创建推荐引擎",
+                    "C": "开发摘要聊天机器人",
+                    "D": "开发多语言翻译系统"
+                },
+                "answer": "C"
+            },
+            {
+                "question_id": 3,
+                "question_en": "A company wants to classify human genes into 20 categories based on gene characteristics. The company needs an ML algorithm to document how the inner mechanism of the model affects the output. Which ML algorithm meets these requirements?",
+                "question_cn": "某公司希望根据基因特征将人类基因分为20个类别，且需要一种机器学习算法来记录模型的内部机制如何影响输出结果。哪种机器学习算法能满足这些需求？",
+                "options_en": {
+                    "A": "Decision trees",
+                    "B": "Linear regression",
+                    "C": "Logistic regression",
+                    "D": "Neural networks"
+                },
+                "options_cn": {
+                    "A": "决策树",
+                    "B": "线性回归",
+                    "C": "逻辑回归",
+                    "D": "神经网络"
+                },
+                "answer": "A"
+            },
+            {
+                "question_id": 4,
+                "question_en": "A company has built an image classification model to predict plant diseases from photos of plant leaves. The company wants to evaluate how many images the model classified correctly. Which evaluation metric should the company use to measure the model's performance?",
+                "question_cn": "某公司构建了一个图像分类模型，用于根据植物叶片照片预测植物病害。该公司希望评估模型正确分类的图像数量，应使用哪种评估指标来衡量模型性能？",
+                "options_en": {
+                    "A": "R-squared score",
+                    "B": "Accuracy",
+                    "C": "Root mean squared error (RMSE)",
+                    "D": "Learning rate"
+                },
+                "options_cn": {
+                    "A": "R平方分数",
+                    "B": "准确率",
+                    "C": "均方根误差（RMSE）",
+                    "D": "学习率"
+                },
+                "answer": "B"
+            },
+            {
+                "question_id": 5,
+                "question_en": "A company is using a pre-trained large language model (LLM) to build a chatbot for product recommendations. The company needs the LLM outputs to be short and written in a specific language. Which solution will align the LLM response quality with the company's expectations?",
+                "question_cn": "某公司正在使用预训练大语言模型（LLM）构建产品推荐聊天机器人，要求LLM的输出内容简短且使用特定语言。哪种解决方案能使LLM的响应质量符合公司预期？",
+                "options_en": {
+                    "A": "Adjust the prompt.",
+                    "B": "Choose an LLM of a different size.",
+                    "C": "Increase the temperature.",
+                    "D": "Increase the Top K value."
+                },
+                "options_cn": {
+                    "A": "调整提示词",
+                    "B": "选择不同规模的LLM",
+                    "C": "提高温度参数",
+                    "D": "提高Top K值"
+                },
+                "answer": "A"
+            },
+            {
+                "question_id": 6,
+                "question_en": "A company uses Amazon SageMaker for its ML pipeline in a production environment. The company has large input data sizes up to 1 GB and processing times up to 1 hour. The company needs near real-time latency. Which SageMaker inference option meets these requirements?",
+                "question_cn": "某公司在生产环境中使用Amazon SageMaker构建其机器学习管道，该公司的输入数据量最大可达1GB，处理时间最长为1小时，且需要近实时的延迟。哪种SageMaker推理选项能满足这些需求？",
+                "options_en": {
+                    "A": "Real-time inference",
+                    "B": "Serverless inference",
+                    "C": "Asynchronous inference",
+                    "D": "Batch transform"
+                },
+                "options_cn": {
+                    "A": "实时推理",
+                    "B": "无服务器推理",
+                    "C": "异步推理",
+                    "D": "批量转换"
+                },
+                "answer": "C"
+            },
+            {
+                "question_id": 7,
+                "question_en": "A company is using domain-specific models. The company wants to avoid creating new models from the beginning. The company instead wants to adapt pre-trained models to create models for new, related tasks. Which ML strategy meets these requirements?",
+                "question_cn": "某公司正在使用特定领域模型，希望避免从头开始创建新模型，而是通过调整预训练模型来为新的相关任务构建模型。哪种机器学习策略能满足这些需求？",
+                "options_en": {
+                    "A": "Increase the number of epochs.",
+                    "B": "Use transfer learning.",
+                    "C": "Decrease the number of epochs.",
+                    "D": "Use unsupervised learning"
+                },
+                "options_cn": {
+                    "A": "增加训练轮数",
+                    "B": "使用迁移学习",
+                    "C": "减少训练轮数",
+                    "D": "使用无监督学习"
+                },
+                "answer": "B"
+            },
+            {
+                "question_id": 8,
+                "question_en": "A company is building a solution to generate images for protective eyewear. The solution must have high accuracy and must minimize the risk of incorrect annotations. Which solution will meet these requirements?",
+                "question_cn": "某公司正在构建一个防护眼镜图像生成解决方案，要求该方案具备高准确率且最大限度降低错误标注的风险。哪种解决方案能满足这些需求？",
+                "options_en": {
+                    "A": "Human-in-the-loop validation by using Amazon SageMaker Ground Truth Plus",
+                    "B": "Data augmentation by using an Amazon Bedrock knowledge base",
+                    "C": "Image recognition by using Amazon Rekognition",
+                    "D": "Data summarization by using Amazon QuickSight Q"
+                },
+                "options_cn": {
+                    "A": "使用Amazon SageMaker Ground Truth Plus进行人在回路验证",
+                    "B": "使用Amazon Bedrock知识库进行数据增强",
+                    "C": "使用Amazon Rekognition进行图像识别",
+                    "D": "使用Amazon QuickSight Q进行数据摘要"
+                },
+                "answer": "A"
+            },
+            {
+                "question_id": 9,
+                "question_en": "A company wants to create a chatbot by using a foundation model (FM) on Amazon Bedrock. The FM needs to access encrypted data that is stored in an Amazon S3 bucket. The data is encrypted with Amazon S3 managed keys (SSE-S3). The FM encounters a failure when attempting to access the S3 bucket data. Which solution will meet these requirements?",
+                "question_cn": "某公司希望在Amazon Bedrock上使用基础模型（FM）构建聊天机器人，该FM需要访问存储在Amazon S3存储桶中的加密数据（数据使用Amazon S3托管密钥SSE-S3加密），但FM在尝试访问S3存储桶数据时失败。哪种解决方案能满足需求？",
+                "options_en": {
+                    "A": "Ensure that the role that Amazon Bedrock assumes has permission to decrypt data with the correct encryption key.",
+                    "B": "Set the access permissions for the S3 buckets to allow public access to enable access over the internet.",
+                    "C": "Use prompt engineering techniques to tell the model to look for information in Amazon S3.",
+                    "D": "Ensure that the S3 data does not contain sensitive information."
+                },
+                "options_cn": {
+                    "A": "确保Amazon Bedrock所扮演的角色拥有使用正确加密密钥解密数据的权限",
+                    "B": "设置S3存储桶的访问权限为允许公共访问，以通过互联网访问数据",
+                    "C": "使用提示词工程技术告知模型去Amazon S3中查找信息",
+                    "D": "确保S3中的数据不包含敏感信息"
+                },
+                "answer": "A"
+            },
+            {
+                "question_id": 10,
+                "question_en": "A company wants to use language models to create an application for inference on edge devices. The inference must have the lowest latency possible. Which solution will meet these requirements?",
+                "question_cn": "某公司希望使用语言模型构建一个边缘设备推理应用，且要求推理具备尽可能低的延迟。哪种解决方案能满足这些需求？",
+                "options_en": {
+                    "A": "Deploy optimized small language models (SLMs) on edge devices.",
+                    "B": "Deploy optimized large language models (LLMs) on edge devices.",
+                    "C": "Incorporate a centralized small language model (SLM) API for asynchronous communication with edge devices.",
+                    "D": "Incorporate a centralized large language model (LLM) API for asynchronous communication with edge devices."
+                },
+                "options_cn": {
+                    "A": "在边缘设备上部署优化后的小型语言模型（SLMs）",
+                    "B": "在边缘设备上部署优化后的大型语言模型（LLMs）",
+                    "C": "集成集中式小型语言模型（SLM）API，与边缘设备进行异步通信",
+                    "D": "集成集中式大型语言模型（LLM）API，与边缘设备进行异步通信"
+                },
+                "answer": "A"
+            },
+            {
+                "question_id": 224,
+                "question_en": "A manufacturing company wants to create product descriptions in multiple languages. Which AWS service will automate this task?",
+                "question_cn": "某制造企业希望创建多语言的产品说明，哪种AWS服务可以自动化完成此任务？",
+                "options_en": {
+                    "A": "Amazon Translate",
+                    "B": "Amazon Transcribe",
+                    "C": "Amazon Kendra",
+                    "D": "Amazon Polly"
+                },
+                "options_cn": {
+                    "A": "Amazon Translate（亚马逊翻译服务）",
+                    "B": "Amazon Transcribe（亚马逊语音转文字服务）",
+                    "C": "Amazon Kendra（亚马逊智能搜索服务）",
+                    "D": "Amazon Polly（亚马逊文字转语音服务）"
+                },
+                "answer": "A"
+            }
+        ];
+
+        // 全局变量
+        let currentMode = 'random'; // 默认随机模式
+        let currentQuestion = null;
+        let currentIndex = -1; // 顺序模式当前索引
+        let answerShown = false;
+        let cnShown = false; // 中文题干是否显示
+        let randomCount = 5; // 随机模式默认题目数量
+        let randomUsedIndexes = []; // 已使用的随机索引
+        let currentProgress = 0; // 当前进度
+        let wrongIndexes = []; // 复习错题时使用的索引数组（题库中的索引）
+        // 滑动相关变量
+        let touchStartX = 0;
+        let touchEndX = 0;
+        // 答题记录 - 存储在localStorage中持久化
+        let answerRecords = JSON.parse(localStorage.getItem('answerRecords') || '{}');
+        // 全局变量
+        let showAnswerDirectly = false; // 新增：是否直显示答案设置
+
+        // DOM 元素
+        const questionContainer = document.getElementById('questionContainer');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextSwipeBtn = document.getElementById('nextSwipeBtn');
+        const swipeNav = document.getElementById('swipeNav');
+        const nextBtn = document.getElementById('nextSwipeBtn'); // 修复：确保 nextBtn 定义
+
+        // 左侧菜单相关
+        const sidebar = document.getElementById('sidebar');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const menuToggle = document.getElementById('menuToggle');
+        // 系统设置弹窗相关
+        const settingsMenuItem = document.getElementById('settingsMenuItem');
+        const settingsModalOverlay = document.getElementById('settingsModalOverlay');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        // 导入相关DOM元素
+        const apiUrlInput = document.getElementById('apiUrl');
+        const fileInput = document.getElementById('fileInput');
+        const importFromApiBtn = document.getElementById('importFromApiBtn');
+        const importFromFileBtn = document.getElementById('importFromFileBtn');
+        const importStatus = document.getElementById('importStatus');
+        // 内容容器（用于切换初始状态）
+        const contentWrapper = document.getElementById('contentWrapper');
+        // 停止复习按钮
+        const stopReviewBtn = document.getElementById('stopReviewBtn');
+        // 状态栏 DOM 元素
+        const statusBar = document.getElementById('statusBar');
+        const currentQuestionInfo = document.getElementById('currentQuestionInfo');
+        const correctCount = document.getElementById('correctCount');
+        const incorrectCount = document.getElementById('incorrectCount');
+        // 新增：主页上的显示答案模式开关
+        const showAnswerToggle = document.getElementById('showAnswerToggle');
+        const showAnswerMenuItem = document.querySelector('.menu-item[data-mode="show-answer"]');
+        let prevMode = null; // 用于在启用/关闭直显答案模式时恢复之前的模式
+
+        // 初始化
+        // 简单检测导入的数据是否像题库数组
+        function isLikelyQuestionsArray (arr) {
+            if (!Array.isArray(arr) || arr.length === 0) return false;
+            const first = arr[0];
+            if (!first) return false;
+            // 需要包含题干和选项
+            if (!(first.question_en || first.question_cn)) return false;
+            if (!(first.options_en || first.options)) return false;
+            return true;
+        }
+
+        // 规范化题目结构到页面使用的字段（确保存在 question_id, question_en, question_cn, options_en, options_cn, answer）
+        function normalizeQuestions (arr) {
+            return arr.map((q, idx) => {
+                const normalized = {};
+                normalized.question_id = q.question_id ?? q.id ?? (idx + 1);
+                normalized.question_en = q.question_en ?? q.en ?? q.question ?? '';
+                normalized.question_cn = q.question_cn ?? q.cn ?? q.question_cn ?? '';
+                // 支持 options_en/options_cn 或 一个 options 对象
+                if (q.options_en && q.options_cn) {
+                    normalized.options_en = q.options_en;
+                    normalized.options_cn = q.options_cn;
+                } else if (q.options && typeof q.options === 'object') {
+                    // assume options is an object with keys A/B/C
+                    normalized.options_en = {};
+                    normalized.options_cn = {};
+                    for (const k of Object.keys(q.options)) {
+                        const v = q.options[k];
+                        if (typeof v === 'string') {
+                            normalized.options_en[k] = v;
+                            normalized.options_cn[k] = v;
+                        } else if (v && typeof v === 'object') {
+                            normalized.options_en[k] = v.en ?? v.text ?? '';
+                            normalized.options_cn[k] = v.cn ?? v.text_cn ?? '';
+                        }
+                    }
+                } else {
+                    normalized.options_en = q.options_en ?? {};
+                    normalized.options_cn = q.options_cn ?? {};
+                }
+
+                // 支持 answer 或 answer_en 字段
+                normalized.answer = q.answer ?? q.answer_en ?? q.correct ?? '';
+                return normalized;
+            });
+        }
+
+        async function init () {
+            // 首先尝试从当前目录加载 data.json（优先于 localStorage），以支持默认本地题库文件
+            let loadedFromFile = false;
+            try {
+                const resp = await fetch('./data.json', { cache: 'no-cache' });
+                if (resp.ok) {
+                    const parsed = await resp.json();
+                    if (isLikelyQuestionsArray(parsed)) {
+                        questionsData = normalizeQuestions(parsed);
+                        try { localStorage.setItem('questionsData', JSON.stringify(questionsData)); } catch (e) { console.warn('保存本地题库失败：', e); }
+                        loadedFromFile = true;
+                        console.info('已从 data.json 加载题库');
+                    } else {
+                        console.warn('data.json 内容不像题库数组，忽略');
+                    }
+                } else {
+                    console.info('未找到 data.json（HTTP ' + resp.status + '）');
+                }
+            } catch (e) {
+                // fetch 在 file:// 或被浏览器阻止时可能抛错，降级到 localStorage
+                console.warn('尝试加载 data.json 失败：', e);
+            }
+
+            // 如果没有从 data.json 成功加载，则尝试从 localStorage 加载已导入题库
+            if (!loadedFromFile) {
+                try {
+                    const stored = localStorage.getItem('questionsData');
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            questionsData = parsed;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('加载本地题库失败：', e);
+                }
+            }
+
+            // 默认模式设置为顺序模式
+            currentMode = 'sequence';
+
+            // 从 localStorage 初始化显示答案配置（持久化）
+            try {
+                const stored = JSON.parse(localStorage.getItem('showAnswerMode'));
+                showAnswerDirectly = stored === true;
+            } catch (e) {
+                // ignore
+            }
+
+            // 设置初始状态样式
+            setInitialState(true);
+
+            // 绑定左侧菜单事件
+            bindSidebarEvents();
+
+            // 绑定设置弹窗事件
+            bindSettingsModalEvents();
+
+            // 绑定导入相关事件
+            bindImportEvents();
+
+            // 绑定停止复习按钮事件
+            stopReviewBtn.addEventListener('click', stopReview);
+
+            // 按钮事件绑定
+            startBtn.addEventListener('click', startReview);
+            resetBtn.addEventListener('click', resetReview);
+            prevBtn.addEventListener('click', goToPrevQuestion);
+            nextSwipeBtn.addEventListener('click', goToNextQuestion);
+
+            // 滑动事件绑定
+            questionContainer.addEventListener('touchstart', handleTouchStart);
+            questionContainer.addEventListener('touchend', handleTouchEnd);
+
+            // 初始化隐藏切换按钮
+            updateSwipeNavVisibility();
+
+            // 初始化开关状态并绑定事件
+            initShowAnswerToggle();
+            // 初始化错题索引（如果有已存的答题记录）
+            buildWrongIndexes();
+        }
+
+        // 构建错题索引数组（按题库顺序）
+        function buildWrongIndexes () {
+            wrongIndexes = [];
+            for (let i = 0; i < questionsData.length; i++) {
+                const q = questionsData[i];
+                const rec = answerRecords[q.question_id];
+                if (rec && rec.incorrect > 0) {
+                    wrongIndexes.push(i);
+                }
+            }
+        }
+
+        // 初始化主页上的显示答案开关并绑定事件
+        function initShowAnswerToggle () {
+            if (!showAnswerToggle) return;
+
+            // 设置开关初始状态
+            const stored = JSON.parse(localStorage.getItem('showAnswerMode') || 'false');
+            showAnswerDirectly = !!stored;
+            showAnswerToggle.checked = showAnswerDirectly;
+
+            // 点击开关时的行为
+            showAnswerToggle.addEventListener('change', (e) => {
+                const checked = e.target.checked;
+                showAnswerDirectly = checked;
+                localStorage.setItem('showAnswerMode', JSON.stringify(checked));
+                
+                // 如果当前正在复习，重新渲染当前题目以应用新设置
+                if (currentQuestion) {
+                    // 根据新的配置更新answerShown状态
+                    answerShown = showAnswerDirectly;
+                    renderQuestion(currentQuestion);
+                }
+            });
+        }
+
+        // 设置初始状态样式
+        function setInitialState (isInitial) {
+            if (isInitial) {
+                contentWrapper.classList.add('initial-state');
+                stopReviewBtn.classList.remove('show'); // 隐藏停止按钮
+            } else {
+                contentWrapper.classList.remove('initial-state');
+                stopReviewBtn.classList.add('show'); // 显示停止按钮
+            }
+        }
+
+        // 绑定左侧菜单事件
+        function bindSidebarEvents () {
+            menuItems.forEach(item => {
+                // 跳过系统设置菜单项
+                if (item.id === 'settingsMenuItem') return;
+
+                item.addEventListener('click', () => {
+                    // 更新选中状态
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+
+                    // 切换模式时处理逻辑
+                    const newMode = item.dataset.mode;
+                    if (newMode === 'wrong') {
+                        buildWrongIndexes();
+                        if (wrongIndexes.length === 0) {
+                            alert('当前没有错题记录，无法进入复习错题模式。');
+                            // 恢复之前的选中状态
+                            menuItems.forEach(i => i.classList.remove('active'));
+                            const currentItem = document.querySelector(`.menu-item[data-mode="${currentMode}"]`);
+                            if (currentItem) currentItem.classList.add('active');
+                            return;
+                        }
+                    } else if (newMode === 'random') {
+                        const input = prompt('请输入随机题目数量：', randomCount);
+                        if (input === null) return; // 用户取消输入
+                        const val = parseInt(input);
+                        if (!isNaN(val) && val > 0 && val <= questionsData.length) {
+                            randomCount = val;
+                        } else {
+                            alert('输入无效，随机题目数量保持不变。');
+                        }
+                    } else if (newMode === 'show-answer') {
+                        // 隐藏显示答案菜单项，因为它不再是一个独立的模式
+                        item.style.display = 'none';
+                        return;
+                    }
+
+                    // 更新当前模式
+                    currentMode = newMode;
+
+                    // 切换模式后关闭侧边栏菜单
+                    sidebar.classList.remove('show');
+                    
+                    // 模式切换后直接开始复习
+                    startReview();
+                    return;
+                });
+            });
+
+            // 移动端菜单切换
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('show');
+            });
+
+            // 点击外部关闭移动端菜单
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 992 &&
+                    !sidebar.contains(e.target) &&
+                    !menuToggle.contains(e.target) &&
+                    sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                }
+            });
+        }
+
+        // 绑定设置弹窗事件
+        function bindSettingsModalEvents () {
+            // 点击系统设置菜单显示弹窗
+            settingsMenuItem.addEventListener('click', () => {
+                settingsModalOverlay.classList.add('show');
+                // 移动端点击设置后关闭侧边栏
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('show');
+                }
+            });
+
+            // 关闭按钮关闭弹窗
+            modalCloseBtn.addEventListener('click', () => {
+                settingsModalOverlay.classList.remove('show');
+            });
+
+            // 点击遮罩层关闭弹窗
+            settingsModalOverlay.addEventListener('click', (e) => {
+                if (e.target === settingsModalOverlay) {
+                    settingsModalOverlay.classList.remove('show');
+                }
+            });
+
+            // ESC键关闭弹窗
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && settingsModalOverlay.classList.contains('show')) {
+                    settingsModalOverlay.classList.remove('show');
+                }
+            });
+        }
+
+        // 绑定导入相关事件
+        function bindImportEvents () {
+            // 从接口导入按钮点击事件
+            importFromApiBtn.addEventListener('click', async () => {
+                const apiUrl = apiUrlInput.value.trim();
+                if (!apiUrl) {
+                    showImportStatus('请输入有效的接口地址', 'error');
+                    return;
+                }
+
+                try {
+                    showImportStatus('正在从接口导入题库...', 'success');
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误，状态码：${response.status}`);
+                    }
+
+                    const newQuestions = await response.json();
+                    validateAndImportQuestions(newQuestions);
+                } catch (error) {
+                    showImportStatus(`导入失败：${error.message}`, 'error');
+                    console.error('接口导入失败：', error);
+                }
+            });
+
+            // 选择文件按钮点击事件
+            importFromFileBtn.addEventListener('click', () => {
+                // 清空已选文件，确保用户再次选择同一个文件时会触发 change 事件
+                try { fileInput.value = ''; } catch (e) { /* ignore */ }
+                fileInput.click();
+            });
+
+            // 文件选择事件
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 验证文件类型
+                if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+                    showImportStatus('请选择有效的JSON文件', 'error');
+                    fileInput.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const newQuestions = JSON.parse(event.target.result);
+                        validateAndImportQuestions(newQuestions);
+                        // 确保无论如何都清空 file input，以便可以二次导入相同文件
+                        try { fileInput.value = ''; } catch (e) { /* ignore */ }
+                    } catch (error) {
+                        showImportStatus(`文件解析失败：${error.message}`, 'error');
+                        console.error('文件解析失败：', error);
+                    }
+                };
+
+                reader.onerror = () => {
+                    showImportStatus('文件读取失败', 'error');
+                    console.error('文件读取失败：', reader.error);
+                    try { fileInput.value = ''; } catch (e) { /* ignore */ }
+                };
+
+                showImportStatus('正在读取JSON文件...', 'success');
+                reader.readAsText(file);
+            });
+        }
+
+        // 验证并导入题库
+        function validateAndImportQuestions (newQuestions) {
+            // 基础验证
+            if (!Array.isArray(newQuestions) || newQuestions.length === 0) {
+                showImportStatus('题库数据格式错误，必须是非空数组', 'error');
+                return;
+            }
+
+            // 验证单个题目结构
+            const requiredFields = ['question_id', 'question_en', 'question_cn', 'options_en', 'options_cn', 'answer_en'];
+            for (let i = 0; i < newQuestions.length; i++) {
+                const question = newQuestions[i];
+                for (const field of requiredFields) {
+                    if (!question.hasOwnProperty(field)) {
+                        showImportStatus(`第${i + 1}题缺少必要字段：${field}`, 'error');
+                        return;
+                    }
+                }
+
+                // 验证选项格式
+                if (typeof question.options_en !== 'object' || typeof question.options_cn !== 'object') {
+                    showImportStatus(`第${i + 1}题的选项格式错误，必须是对象`, 'error');
+                    return;
+                }
+            }
+
+            // 确认是否重置题库
+            const confirmReset = confirm(
+                `即将导入${newQuestions.length}道题目，导入后将重置现有题库和所有复习记录，是否继续？`
+            );
+
+            if (!confirmReset) {
+                showImportStatus('用户取消了题库导入', 'error');
+                fileInput.value = ''; // 清空文件选择
+                return;
+            }
+
+            // 执行导入 - 重置当前使用的题库
+            questionsData = newQuestions;
+            // 持久化保存到 localStorage，导入后页面刷新仍可保留题库
+            try {
+                localStorage.setItem('questionsData', JSON.stringify(questionsData));
+            } catch (e) {
+                console.warn('保存导入题库到 localStorage 失败：', e);
+            }
+
+            // 重置所有复习数据
+            resetAllData();
+
+            // 更新随机题数最大值（如果相关控件存在）
+            try {
+                updateRandomCountMax();
+            } catch (e) {
+                // 忽略，如果页面中没有随机设置输入则不影响导入
+                console.warn('updateRandomCountMax skipped:', e);
+            }
+
+            // 更新随机题数设置的显示状态（如果存在该元素）
+            const randomSettingsEl = document.querySelector('.random-settings');
+            if (randomSettingsEl) {
+                randomSettingsEl.classList.toggle('show', currentMode === 'random');
+            }
+
+            showImportStatus(`成功导入${questionsData.length}道题目，已重置当前题库和所有复习记录`, 'success');
+            fileInput.value = ''; // 清空文件选择
+            apiUrlInput.value = ''; // 清空API地址
+        }
+
+        // 更新随机题数最大值
+        function updateRandomCountMax () {
+            // 如果页面上没有随机题数输入（randomCountInput），则安全返回
+            const el = document.getElementById('randomCountInput');
+            if (!el) return;
+
+            el.max = questionsData.length;
+            if (randomCount > questionsData.length) {
+                randomCount = questionsData.length;
+                el.value = randomCount;
+            }
+        }
+
+        // 显示导入状态
+        function showImportStatus (message, type) {
+            importStatus.textContent = message;
+            importStatus.className = `import-status status-${type}`;
+
+            // 5秒后自动清除状态
+            setTimeout(() => {
+                importStatus.className = 'import-status';
+                importStatus.textContent = '';
+            }, 5000);
+        }
+
+        // 重置所有数据（导入题库时）
+        function resetAllData () {
+            answerShown = false;
+            cnShown = false;
+            currentQuestion = null;
+            currentIndex = -1;
+            randomUsedIndexes = [];
+            wrongIndexes = [];
+            currentProgress = 0;
+            prevBtn.disabled = true;
+            nextSwipeBtn.disabled = true;
+
+            questionContainer.innerHTML = `
+                <div class="no-question">
+                    题库已更新，选择复习模式后点击「开始复习」开始
+                </div>
+            `;
+
+            updateSwipeNavVisibility();
+            // 重置后恢复初始状态样式
+            setInitialState(true);
+            // 更新状态栏（如果题库为空则显示未开始）
+            updateStatusBar();
+        }
+
+        // 更新切换按钮显示/隐藏状态
+        function updateSwipeNavVisibility () {
+            if (currentQuestion) {
+                swipeNav.classList.add('show');
+            } else {
+                swipeNav.classList.remove('show');
+            }
+        }
+
+        // 触摸开始事件
+        function handleTouchStart (e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+
+        // 触摸结束事件
+        function handleTouchEnd (e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipeGesture();
+        }
+
+        // 处理滑动手势
+        function handleSwipeGesture () {
+            if (!currentQuestion) return;
+
+            const swipeThreshold = 50; // 滑动阈值（像素）
+            const swipeDistance = touchEndX - touchStartX;
+
+            // 右滑 - 上一题
+            if (swipeDistance > swipeThreshold) {
+                goToPrevQuestion();
+            }
+            // 左滑 - 下一题
+            else if (swipeDistance < -swipeThreshold) {
+                goToNextQuestion();
+            }
+        }
+
+        // 开始复习
+        function startReview () {
+            // 移除初始状态样式（隐藏开始/重置按钮）
+            setInitialState(false);
+
+            answerShown = showAnswerDirectly; // 根据全局配置决定是否显示答案
+            cnShown = false;
+            prevBtn.disabled = false;
+            nextSwipeBtn.disabled = false;
+            randomUsedIndexes = [];
+            currentProgress = 0;
+
+            if (currentMode === 'random') {
+                // 随机模式：直接获取随机题目（题数已在模式切换时设置）
+                getRandomQuestion();
+            } else if (currentMode === 'wrong') {
+                // 复习错题：按顺序复习所有被标记为错误的题目
+                buildWrongIndexes();
+                if (wrongIndexes.length === 0) {
+                    alert('当前没有错题记录，无法进入复习错题模式。');
+                    // 恢复为顺序模式的初始状态
+                    setInitialState(true);
+                    return;
+                }
+                currentIndex = 0; // 指向 wrongIndexes 的位置
+                currentQuestion = questionsData[wrongIndexes[currentIndex]];
+                currentProgress = 1;
+                updateNavButtons();
+                updateSwipeNavVisibility();
+                renderQuestion(currentQuestion);
+            } else {
+                // 顺序模式：从第一题开始
+                currentIndex = 0;
+                currentQuestion = questionsData[currentIndex];
+                currentProgress = 1;
+                updateNavButtons();
+                updateSwipeNavVisibility();
+                renderQuestion(currentQuestion);
+            }
+        }
+
+        // 停止复习
+        function stopReview () {
+            if (confirm('确定要停止复习吗？当前进度将被重置。')) {
+                resetReview();
+            }
+        }
+
+        // 获取随机题目（根据用户设置的数量随机生成）
+        function getRandomQuestion () {
+            // 重置已使用索引（如果已用完）
+            if (randomUsedIndexes.length >= randomCount) {
+                randomUsedIndexes = [];
+            }
+
+            // 生成未使用的随机索引
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * questionsData.length);
+            } while (randomUsedIndexes.includes(newIndex));
+
+            randomUsedIndexes.push(newIndex);
+            currentIndex = newIndex;
+            currentQuestion = questionsData[currentIndex];
+            currentProgress = randomUsedIndexes.length;
+            updateNavButtons();
+            updateSwipeNavVisibility();
+
+            // 根据全局配置决定是否显示答案
+            answerShown = showAnswerDirectly;
+
+            renderQuestion(currentQuestion);
+        }
+
+        // 更新导航按钮状态
+        function updateNavButtons () {
+            let total;
+            if (currentMode === 'random') total = randomCount;
+            else if (currentMode === 'wrong') total = wrongIndexes.length;
+            else total = questionsData.length;
+
+            if (currentMode === 'random') {
+                prevBtn.disabled = currentProgress <= 1;
+                nextSwipeBtn.disabled = currentProgress >= total;
+            } else {
+                prevBtn.disabled = currentIndex <= 0;
+                nextBtn.disabled = currentIndex >= total - 1; // 修复：确保 nextBtn 正确引用
+            }
+        }
+
+        // 记录答题结果（持久化存储）
+        function recordAnswerResult (questionId, isCorrect) {
+            // 初始化答题记录
+            if (!answerRecords[questionId]) {
+                answerRecords[questionId] = {
+                    correct: 0,
+                    incorrect: 0
+                };
+            }
+
+            // 更新答题记录
+            if (isCorrect) {
+                answerRecords[questionId].correct++;
+            } else {
+                answerRecords[questionId].incorrect++;
+            }
+
+            // 保存到localStorage持久化
+            localStorage.setItem('answerRecords', JSON.stringify(answerRecords));
+
+            // 更新错题索引缓存
+            buildWrongIndexes();
+        }
+
+        // 更新状态栏信息
+        function updateStatusBar () {
+            if (currentQuestion) {
+                let total = currentMode === 'random' ? randomCount : (currentMode === 'wrong' ? wrongIndexes.length : questionsData.length);
+                currentQuestionInfo.textContent = `题目 ${currentProgress}/${total}`;
+            } else {
+                currentQuestionInfo.textContent = '未开始';
+            }
+
+            const record = answerRecords[currentQuestion?.question_id] || { correct: 0, incorrect: 0 };
+            correctCount.textContent = record.correct;
+            incorrectCount.textContent = record.incorrect;
+        }
+
+        // 更新侧边栏选中项（保证与主页开关一致）
+        function updateMenuActive (mode) {
+            menuItems.forEach(i => i.classList.remove('active'));
+            const target = document.querySelector(`.menu-item[data-mode="${mode}"]`);
+            if (target) target.classList.add('active');
+        }
+
+        // 渲染题目
+        function renderQuestion (question) {
+            const { question_id, question_en, question_cn, options_en, options_cn, answer } = question;
+            const total = currentMode === 'random' ? randomCount : (currentMode === 'wrong' ? wrongIndexes.length : questionsData.length);
+
+            // 获取答题记录（从localStorage读取）
+            const record = answerRecords[question_id] || { correct: 0, incorrect: 0 };
+
+            // 构建答题记录HTML
+            const recordHtml = `
+                <div class="answer-record">
+                    📝 当前题：<span class="correct-count">答对 ${record.correct} 次</span> | 
+                    <span class="incorrect-count">答错 ${record.incorrect} 次</span>
+                </div>
+            `;
+
+            // 构建选项HTML
+            const optionsHtml = Object.entries(options_en).map(([key, enText]) => {
+                const cnText = options_cn[key];
+                // 支持分号分隔的多选题答案
+                const isCorrect = (showAnswerDirectly || answerShown) && 
+                                 (answer.includes(';') ? 
+                                  answer.split(';').map(a => a.trim()).includes(key) : 
+                                  key === answer);
+                return `
+                    <div class="option-item ${isCorrect ? 'correct' : ''}" data-key="${key}">
+                        <span class="option-key">${key}</span>
+                        <div class="option-text">
+                            <div class="en">${enText}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            //   <div class="question-number">
+            //             <span class="original-number">题目原始序号：${question_id}</span>
+            //             <span class="current-number">当前复习序号：${currentProgress}</span>
+            //         </div>
+   
+                    // <!-- 题干上方的进度提示 -->
+                    // <div class="question-progress">
+                    //     复习进度：${currentProgress}/${total}
+                    // </div>
+            // 构建题目HTML
+            // 创建一行两端对齐的布局
+            const progressRecordHtml = `
+                <div class="progress-record-container">
+                    <div class="progress-item">进度：${currentProgress}/${total}</div>
+                    <div class="record-item">当前题：<span class="correct-count">答对 ${record.correct} 次</span> | <span class="incorrect-count">答错 ${record.incorrect} 次</span></div>
+                </div>`;
+            
+            let html = `
+                <div class="question-card">
+                    <!-- 答题进度和记录（一行两端对齐） -->
+                    ${progressRecordHtml}
+                    <!-- 英文题目 + 显示中文按钮 -->
+                    <div class="lang-group">
+                        <div class="question-title">
+                            ${question_en}
+                            <button class="toggle-cn-btn show-cn" onclick="toggleChineseFromBtn()">
+                                <i class="fas fa-language"></i> ${cnShown ? '隐藏中文' : '显示中文'}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 中文题目（默认隐藏） -->
+                    <div class="lang-group ${!cnShown ? 'cn-hidden' : ''}">
+                        <div class="question-title">${question_cn}</div>
+                    </div>
+                    
+                    <!-- 选项（英中对照） -->
+                    <div class="options">
+                        ${optionsHtml}
+                    </div>
+                    
+                    <!-- 答案区域 -->
+                    ${showAnswerDirectly || answerShown ? `
+                        <div class="answer-section">
+                            <div class="answer-title">正确答案：${answer}</div>
+                            <div class="answer-content">
+                                ${answer.includes(';') ? 
+                                  // 多选题处理多个答案
+                                  answer.split(';').map(a => a.trim()).map(key => `
+                                    <div class="en">${options_en[key] || ''}</div>
+                                    ${cnShown ? `<div class="cn lang-group">${options_cn[key] || ''}</div>` : ''}
+                                  `).join('') : 
+                                  // 单选题处理单个答案
+                                  `
+                                    <div class="en">${options_en[answer] || ''}</div>
+                                    ${cnShown ? `<div class="cn lang-group">${options_cn[answer] || ''}</div>` : ''}
+                                  `
+                                }
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            questionContainer.innerHTML = html;
+
+            // 为选项绑定点击事件
+            if (!showAnswerDirectly) {
+                const optionItems = document.querySelectorAll('.option-item');
+                optionItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        if (!answerShown) {
+                                    const selectedKey = item.dataset.key;
+                                    let isCorrectAnswer = false;
+                                    
+                                    // 处理答案比较逻辑
+                                    if (answer.includes(';')) {
+                                        // 多选题逻辑 - 这里简化处理，实际可能需要支持多选功能
+                                        const correctAnswers = answer.split(';').map(a => a.trim());
+                                        isCorrectAnswer = correctAnswers.includes(selectedKey);
+                                    } else {
+                                        // 单选题逻辑
+                                        isCorrectAnswer = selectedKey === answer;
+                                    }
+
+                                    // 记录答题结果（自动持久化）
+                                    recordAnswerResult(question_id, isCorrectAnswer);
+
+                                    if (isCorrectAnswer) {
+                                        item.classList.add('correct');
+                                    } else {
+                                        item.classList.add('incorrect');
+                                    }
+                                    
+                                    // 高亮所有正确答案
+                                    optionItems.forEach(opt => {
+                                        if (answer.includes(';')) {
+                                            const correctAnswers = answer.split(';').map(a => a.trim());
+                                            if (correctAnswers.includes(opt.dataset.key)) {
+                                                opt.classList.add('correct');
+                                            }
+                                        } else if (opt.dataset.key === answer) {
+                                            opt.classList.add('correct');
+                                        }
+                                    });
+                                    
+                                    answerShown = true;
+
+                            // 重新渲染题目以显示更新后的答题记录
+                            renderQuestion(question);
+                        }
+                    });
+                });
+            }
+
+            // 更新状态栏信息
+            updateStatusBar();
+        }
+
+        // 从题干按钮切换中文显示/隐藏
+        function toggleChineseFromBtn () {
+            if (!currentQuestion) return;
+            cnShown = !cnShown;
+            renderQuestion(currentQuestion);
+        }
+
+        // 上一题
+        function goToPrevQuestion () {
+            if (!currentQuestion) return;
+            answerShown = false;
+
+            // 检查是否是第一题
+            if (currentMode === 'random') {
+                if (currentProgress <= 1) return;
+
+                // 随机模式：回到上一个随机题
+                randomUsedIndexes.pop();
+                if (randomUsedIndexes.length > 0) {
+                    currentIndex = randomUsedIndexes[randomUsedIndexes.length - 1];
+                } else {
+                    currentIndex = -1;
+                    resetReview();
+                    return;
+                }
+                currentQuestion = questionsData[currentIndex];
+                currentProgress = randomUsedIndexes.length;
+            } else if (currentMode === 'wrong') {
+                // 错题模式：基于 wrongIndexes 指针移动
+                if (currentIndex <= 0) return;
+                currentIndex--;
+                currentQuestion = questionsData[wrongIndexes[currentIndex]];
+                currentProgress--;
+            } else {
+                // 顺序/直显答案模式：索引-1
+                if (currentIndex <= 0) return;
+                currentIndex--;
+                currentQuestion = questionsData[currentIndex];
+                currentProgress--;
+
+                // 直显答案模式下直接显示答案
+                if (currentMode === 'show-answer') {
+                    answerShown = true;
+                }
+            }
+
+            updateNavButtons();
+            updateSwipeNavVisibility();
+            renderQuestion(currentQuestion);
+        }
+
+        // 下一题
+        function goToNextQuestion () {
+            if (!currentQuestion) return;
+            answerShown = false;
+
+            // 检查是否完成当前轮次
+            const total = currentMode === 'random' ? randomCount : (currentMode === 'wrong' ? wrongIndexes.length : questionsData.length);
+            const isLastQuestion = currentProgress >= total;
+
+            if (isLastQuestion) {
+                // 完成一轮，提示并重置
+                alert(currentMode === 'random'
+                    ? `已完成${randomCount}道随机题目复习！`
+                    : (currentMode === 'wrong' ? `已完成${wrongIndexes.length}道错题复习！` : '已完成所有题目复习，将重新开始！'));
+                resetReview();
+                startReview();
+                return;
+            }
+
+            if (currentMode === 'random') {
+                // 随机模式：获取下一个随机题
+                getRandomQuestion();
+            } else if (currentMode === 'wrong') {
+                // 错题模式：按 wrongIndexes 顺序前进
+                currentIndex++;
+                currentQuestion = questionsData[wrongIndexes[currentIndex]];
+                currentProgress++;
+            } else {
+                // 顺序/直显答案模式：索引+1
+                currentIndex++;
+                currentQuestion = questionsData[currentIndex];
+                currentProgress++;
+
+                // 直显答案模式下直接显示答案
+                if (currentMode === 'show-answer') {
+                    answerShown = true;
+                }
+            }
+
+            updateNavButtons();
+            updateSwipeNavVisibility();
+            renderQuestion(currentQuestion);
+        }
+
+        // 重置复习
+        function resetReview () {
+            answerShown = false;
+            cnShown = false;
+            currentQuestion = null;
+            currentIndex = -1;
+            randomUsedIndexes = [];
+            wrongIndexes = [];
+            currentProgress = 0;
+            prevBtn.disabled = true;
+            nextSwipeBtn.disabled = true;
+
+            questionContainer.innerHTML = `
+                <div class="no-question">
+                    选择复习模式后点击「开始复习」开始
+                </div>
+            `;
+
+            // 隐藏切换按钮
+            updateSwipeNavVisibility();
+
+            // 恢复初始状态样式（显示开始/重置按钮，隐藏停止按钮）
+            setInitialState(true);
+
+            // 更新状态栏
+            updateStatusBar();
+        }
+
+        // 启动应用
+        init();
+    </script>
+</body>
+
+</html>
