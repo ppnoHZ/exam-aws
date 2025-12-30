@@ -965,6 +965,11 @@
                 <i class="fas fa-exclamation-circle"></i>
                 <span>复习错题</span>
             </div>
+
+            <div class="menu-item" data-mode="shuffle">
+                <i class="fas fa-random"></i>
+                <span>乱序模式</span>
+            </div>
         </div>
 
         <!-- 新增：系统设置菜单选项 -->
@@ -1252,6 +1257,7 @@
         ];
 
         // 全局变量
+        let originalQuestionsData = []; // 保存原始顺序的题库
         let currentMode = 'random'; // 默认随机模式
         let currentQuestion = null;
         let currentIndex = -1; // 顺序模式当前索引
@@ -1433,6 +1439,11 @@
 
             // 初始化开关状态并绑定事件
             initShowAnswerToggle();
+            // 初始化原始数据副本
+            if (originalQuestionsData.length === 0 && questionsData.length > 0) {
+                originalQuestionsData = [...questionsData];
+            }
+
             // 初始化错题索引（如果有已存的答题记录）
             buildWrongIndexes();
         }
@@ -1688,6 +1699,7 @@
 
             // 执行导入 - 重置当前使用的题库
             questionsData = newQuestions;
+            originalQuestionsData = [...questionsData];
             // 持久化保存到 localStorage，导入后页面刷新仍可保留题库
             try {
                 localStorage.setItem('questionsData', JSON.stringify(questionsData));
@@ -1816,10 +1828,28 @@
             randomUsedIndexes = [];
             currentProgress = 0;
 
-            if (currentMode === 'random') {
+            // 确保有原始数据副本
+            if (originalQuestionsData.length === 0 && questionsData.length > 0) {
+                originalQuestionsData = [...questionsData];
+            }
+
+            if (currentMode === 'shuffle') {
+                // 乱序模式：打乱题目顺序
+                questionsData = [...originalQuestionsData].sort(() => Math.random() - 0.5);
+                currentIndex = 0;
+                currentQuestion = questionsData[currentIndex];
+                currentProgress = 1;
+                updateNavButtons();
+                updateSwipeNavVisibility();
+                renderQuestion(currentQuestion);
+            } else if (currentMode === 'random') {
+                // 恢复原始顺序
+                questionsData = [...originalQuestionsData];
                 // 随机模式：直接获取随机题目（题数已在模式切换时设置）
                 getRandomQuestion();
             } else if (currentMode === 'wrong') {
+                // 恢复原始顺序
+                questionsData = [...originalQuestionsData];
                 // 复习错题：按顺序复习所有被标记为错误的题目
                 buildWrongIndexes();
                 if (wrongIndexes.length === 0) {
@@ -1835,6 +1865,8 @@
                 updateSwipeNavVisibility();
                 renderQuestion(currentQuestion);
             } else {
+                // 恢复原始顺序
+                questionsData = [...originalQuestionsData];
                 // 顺序模式：从第一题开始
                 currentIndex = 0;
                 currentQuestion = questionsData[currentIndex];
@@ -2034,7 +2066,7 @@
                         </div>
                     ` : ''}
                 </div>
-            `;
+            ` ;
 
             questionContainer.innerHTML = html;
 
