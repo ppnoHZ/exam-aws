@@ -138,6 +138,38 @@
             display: flex;
         }
 
+        /* 错误提示弹窗 */
+        .error-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #e53e3e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .error-toast.show {
+            opacity: 1;
+            visibility: visible;
+            top: 70px; /* 避开状态栏 */
+        }
+
+        .error-toast i {
+            font-size: 16px;
+        }
+
         /* 系统设置弹窗 */
         .settings-modal {
             width: 90%;
@@ -1053,6 +1085,12 @@
         </div>
     </div>
 
+    <!-- 错误提示 Toast -->
+    <div id="errorToast" class="error-toast">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>回答错误，请再接再厉！</span>
+    </div>
+
     <script>
         // 初始考题数据
         let questionsData = [
@@ -1262,6 +1300,7 @@
         let currentQuestion = null;
         let currentIndex = -1; // 顺序模式当前索引
         let answerShown = false;
+        let lastSelectedOptionKey = null; // 上次选择的选项Key
         let cnShown = false; // 中文题干是否显示
         let randomCount = 5; // 随机模式默认题目数量
         let randomUsedIndexes = []; // 已使用的随机索引
@@ -1311,6 +1350,28 @@
         const showAnswerToggle = document.getElementById('showAnswerToggle');
         const showAnswerMenuItem = document.querySelector('.menu-item[data-mode="show-answer"]');
         let prevMode = null; // 用于在启用/关闭直显答案模式时恢复之前的模式
+        
+        // 错误提示 Toast 元素
+        const errorToast = document.getElementById('errorToast');
+        let errorToastTimer = null;
+
+        // 显示错误提示
+        function showErrorToast(message = '回答错误') {
+            if (!errorToast) return;
+            
+            const span = errorToast.querySelector('span');
+            if (span) span.textContent = message;
+            
+            errorToast.classList.add('show');
+            
+            // 清除之前的定时器
+            if (errorToastTimer) clearTimeout(errorToastTimer);
+            
+            // 2秒后自动隐藏
+            errorToastTimer = setTimeout(() => {
+                errorToast.classList.remove('show');
+            }, 2000);
+        }
 
         // 初始化
         // 简单检测导入的数据是否像题库数组
@@ -1757,6 +1818,7 @@
         // 重置所有数据（导入题库时）
         function resetAllData () {
             answerShown = false;
+            lastSelectedOptionKey = null;
             cnShown = false;
             currentQuestion = null;
             currentIndex = -1;
@@ -1822,6 +1884,7 @@
             setInitialState(false);
 
             answerShown = showAnswerDirectly; // 根据全局配置决定是否显示答案
+            lastSelectedOptionKey = null;
             cnShown = false;
             prevBtn.disabled = false;
             nextSwipeBtn.disabled = false;
@@ -1995,8 +2058,12 @@
                                  (answer.includes(';') ? 
                                   answer.split(';').map(a => a.trim()).includes(key) : 
                                   key === answer);
+                
+                // 判断是否为用户选择的错误选项
+                const isSelectedWrong = answerShown && key === lastSelectedOptionKey && !isCorrect;
+
                 return `
-                    <div class="option-item ${isCorrect ? 'correct' : ''}" data-key="${key}">
+                    <div class="option-item ${isCorrect ? 'correct' : ''} ${isSelectedWrong ? 'incorrect' : ''}" data-key="${key}">
                         <span class="option-key">${key}</span>
                         <div class="option-text">
                             <div class="en">${enText}</div>
@@ -2077,6 +2144,7 @@
                     item.addEventListener('click', () => {
                         if (!answerShown) {
                                     const selectedKey = item.dataset.key;
+                                    lastSelectedOptionKey = selectedKey;
                                     let isCorrectAnswer = false;
                                     
                                     // 处理答案比较逻辑
@@ -2096,6 +2164,8 @@
                                         item.classList.add('correct');
                                     } else {
                                         item.classList.add('incorrect');
+                                        // 显示错误提示
+                                        showErrorToast('回答错误，正确答案是 ' + answer);
                                     }
                                     
                                     // 高亮所有正确答案
@@ -2134,6 +2204,7 @@
         function goToPrevQuestion () {
             if (!currentQuestion) return;
             answerShown = false;
+            lastSelectedOptionKey = null;
 
             // 检查是否是第一题
             if (currentMode === 'random') {
@@ -2178,6 +2249,7 @@
         function goToNextQuestion () {
             if (!currentQuestion) return;
             answerShown = false;
+            lastSelectedOptionKey = null;
 
             // 检查是否完成当前轮次
             const total = currentMode === 'random' ? randomCount : (currentMode === 'wrong' ? wrongIndexes.length : questionsData.length);
@@ -2221,6 +2293,7 @@
         // 重置复习
         function resetReview () {
             answerShown = false;
+            lastSelectedOptionKey = null;
             cnShown = false;
             currentQuestion = null;
             currentIndex = -1;
